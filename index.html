@@ -7,7 +7,6 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/framer-motion@10.16.0/dist/framer-motion.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -75,10 +74,15 @@
         
         .ios-button {
             transition: all 0.2s ease;
+            cursor: pointer;
         }
         
         .ios-button:active {
             transform: scale(0.95);
+        }
+        
+        .ios-spring {
+            animation: ios-spring 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         
         @keyframes ios-spring {
@@ -87,24 +91,46 @@
             100% { transform: scale(1) translateY(0); opacity: 1; }
         }
         
-        .ios-spring {
-            animation: ios-spring 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        @keyframes slideLeft {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes slideRight {
+            from { opacity: 0; transform: translateX(-100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .slide-left {
+            animation: slideLeft 0.5s ease-out forwards;
+        }
+        
+        .slide-right {
+            animation: slideRight 0.5s ease-out forwards;
         }
         
         .betterfly-gradient {
             background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease-out;
         }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-        const { motion, AnimatePresence } = Motion;
+        const { useState, useEffect } = React;
 
         // iOS FTUX Flow Component
         function BetterflyFTUX() {
@@ -112,6 +138,7 @@
             const [userPreferences, setUserPreferences] = useState({
                 goals: [],
                 interests: [],
+                experience: '',
                 name: ''
             });
             const [checklist, setChecklist] = useState([
@@ -152,46 +179,41 @@
 
             return (
                 <div className="w-full h-screen bg-ios-gray-50 overflow-hidden">
-                    <AnimatePresence mode="wait">
-                        {steps[currentStep] === 'welcome' && (
-                            <WelcomeScreen key="welcome" onNext={nextStep} />
-                        )}
-                        {steps[currentStep] === 'personalization-1' && (
-                            <PersonalizationScreen1 
-                                key="personal-1" 
-                                onNext={nextStep} 
-                                onBack={prevStep}
-                                preferences={userPreferences}
-                                setPreferences={setUserPreferences}
-                            />
-                        )}
-                        {steps[currentStep] === 'personalization-2' && (
-                            <PersonalizationScreen2 
-                                key="personal-2" 
-                                onNext={nextStep} 
-                                onBack={prevStep}
-                                preferences={userPreferences}
-                                setPreferences={setUserPreferences}
-                            />
-                        )}
-                        {steps[currentStep] === 'checklist' && (
-                            <ChecklistScreen 
-                                key="checklist" 
-                                onNext={nextStep}
-                                checklist={checklist}
-                                onCompleteItem={completeChecklistItem}
-                            />
-                        )}
-                        {steps[currentStep] === 'empty-state' && (
-                            <EmptyStateScreen key="empty" onNext={nextStep} />
-                        )}
-                        {steps[currentStep] === 'tour' && (
-                            <TourScreen key="tour" onNext={nextStep} />
-                        )}
-                        {steps[currentStep] === 'celebration' && (
-                            <CelebrationScreen key="celebration" />
-                        )}
-                    </AnimatePresence>
+                    {steps[currentStep] === 'welcome' && (
+                        <WelcomeScreen onNext={nextStep} />
+                    )}
+                    {steps[currentStep] === 'personalization-1' && (
+                        <PersonalizationScreen1 
+                            onNext={nextStep} 
+                            onBack={prevStep}
+                            preferences={userPreferences}
+                            setPreferences={setUserPreferences}
+                        />
+                    )}
+                    {steps[currentStep] === 'personalization-2' && (
+                        <PersonalizationScreen2 
+                            onNext={nextStep} 
+                            onBack={prevStep}
+                            preferences={userPreferences}
+                            setPreferences={setUserPreferences}
+                        />
+                    )}
+                    {steps[currentStep] === 'checklist' && (
+                        <ChecklistScreen 
+                            onNext={nextStep}
+                            checklist={checklist}
+                            onCompleteItem={completeChecklistItem}
+                        />
+                    )}
+                    {steps[currentStep] === 'empty-state' && (
+                        <EmptyStateScreen onNext={nextStep} />
+                    )}
+                    {steps[currentStep] === 'tour' && (
+                        <TourScreen onNext={nextStep} />
+                    )}
+                    {steps[currentStep] === 'celebration' && (
+                        <CelebrationScreen />
+                    )}
                 </div>
             );
         }
@@ -199,49 +221,31 @@
         // Welcome Screen Component
         function WelcomeScreen({ onNext }) {
             return (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    className="flex flex-col items-center justify-center h-full px-8 betterfly-gradient"
-                >
+                <div className="flex flex-col items-center justify-center h-full px-8 betterfly-gradient fade-in">
                     <div className="text-center space-y-8">
-                        <motion.div
-                            initial={{ scale: 0.8, y: 20 }}
-                            animate={{ scale: 1, y: 0 }}
-                            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                            className="mb-8"
-                        >
-                            <div className="w-24 h-24 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <div className="mb-8">
+                            <div className="w-24 h-24 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm ios-spring">
                                 <span className="text-4xl">🦋</span>
                             </div>
                             <h1 className="text-4xl font-bold text-white mb-2">Welcome to Betterfly</h1>
                             <p className="text-xl text-white/80">Transform your wellness journey</p>
-                        </motion.div>
+                        </div>
 
-                        <motion.div
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.4 }}
-                            className="space-y-4"
-                        >
+                        <div className="space-y-4">
                             <p className="text-lg text-white/90 leading-relaxed">
                                 We're here to help you build healthy habits,<br />
                                 track your progress, and celebrate your wins.
                             </p>
-                        </motion.div>
+                        </div>
 
-                        <motion.button
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.6 }}
+                        <button
                             onClick={onNext}
                             className="ios-button bg-white text-ios-blue font-semibold py-4 px-8 rounded-ios-lg text-lg ios-shadow-lg"
                         >
                             Let's get started
                         </button>
                     </div>
-                </motion.div>
+                </div>
             );
         }
 
@@ -266,16 +270,11 @@
             };
 
             return (
-                <motion.div
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    className="flex flex-col h-full bg-white"
-                >
+                <div className="flex flex-col h-full bg-white slide-left">
                     {/* Header */}
                     <div className="pt-ios-safe-top px-6 pb-4">
                         <div className="flex items-center justify-between mb-6">
-                            <button onClick={onBack} className="text-ios-blue text-lg">
+                            <button onClick={onBack} className="text-ios-blue text-lg ios-button">
                                 ← Back
                             </button>
                             <div className="flex space-x-2">
@@ -290,12 +289,9 @@
                     {/* Goals Grid */}
                     <div className="flex-1 px-6">
                         <div className="grid grid-cols-2 gap-4">
-                            {goals.map((goal, index) => (
-                                <motion.button
+                            {goals.map((goal) => (
+                                <button
                                     key={goal.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1 }}
                                     onClick={() => toggleGoal(goal.id)}
                                     className={`ios-button p-6 rounded-ios-lg border-2 transition-all ${
                                         preferences.goals.includes(goal.id)
@@ -307,7 +303,7 @@
                                         <span className="text-xl">{goal.icon}</span>
                                     </div>
                                     <h3 className="font-semibold text-ios-gray-900">{goal.title}</h3>
-                                </motion.button>
+                                </button>
                             ))}
                         </div>
                     </div>
@@ -317,7 +313,7 @@
                         <button
                             onClick={onNext}
                             disabled={preferences.goals.length === 0}
-                            className={`w-full py-4 rounded-ios-lg font-semibold text-lg ${
+                            className={`w-full py-4 rounded-ios-lg font-semibold text-lg ios-button ${
                                 preferences.goals.length > 0
                                     ? 'bg-ios-blue text-white'
                                     : 'bg-ios-gray-200 text-ios-gray-400'
@@ -326,7 +322,7 @@
                             Continue ({preferences.goals.length} selected)
                         </button>
                     </div>
-                </motion.div>
+                </div>
             );
         }
 
@@ -354,16 +350,11 @@
             ];
 
             return (
-                <motion.div
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    className="flex flex-col h-full bg-white"
-                >
+                <div className="flex flex-col h-full bg-white slide-left">
                     {/* Header */}
                     <div className="pt-ios-safe-top px-6 pb-4">
                         <div className="flex items-center justify-between mb-6">
-                            <button onClick={onBack} className="text-ios-blue text-lg">
+                            <button onClick={onBack} className="text-ios-blue text-lg ios-button">
                                 ← Back
                             </button>
                             <div className="flex space-x-2">
@@ -377,12 +368,9 @@
 
                     {/* Experience Levels */}
                     <div className="flex-1 px-6 space-y-4">
-                        {levels.map((level, index) => (
-                            <motion.button
+                        {levels.map((level) => (
+                            <button
                                 key={level.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.15 }}
                                 onClick={() => setPreferences(prev => ({ ...prev, experience: level.id }))}
                                 className={`ios-button w-full p-6 rounded-ios-lg border-2 text-left transition-all ${
                                     preferences.experience === level.id
@@ -397,7 +385,7 @@
                                         <p className="text-ios-gray-600">{level.subtitle}</p>
                                     </div>
                                 </div>
-                            </motion.button>
+                            </button>
                         ))}
                     </div>
 
@@ -406,7 +394,7 @@
                         <button
                             onClick={onNext}
                             disabled={!preferences.experience}
-                            className={`w-full py-4 rounded-ios-lg font-semibold text-lg ${
+                            className={`w-full py-4 rounded-ios-lg font-semibold text-lg ios-button ${
                                 preferences.experience
                                     ? 'bg-ios-blue text-white'
                                     : 'bg-ios-gray-200 text-ios-gray-400'
@@ -415,7 +403,7 @@
                             Continue
                         </button>
                     </div>
-                </motion.div>
+                </div>
             );
         }
 
@@ -425,12 +413,7 @@
             const progress = (completedCount / checklist.length) * 100;
 
             return (
-                <motion.div
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    className="flex flex-col h-full bg-white"
-                >
+                <div className="flex flex-col h-full bg-white slide-left">
                     {/* Header */}
                     <div className="pt-ios-safe-top px-6 pb-6">
                         <h2 className="text-3xl font-bold text-ios-gray-900 mb-2">Quick Setup</h2>
@@ -438,11 +421,9 @@
                         
                         {/* Progress Bar */}
                         <div className="bg-ios-gray-200 rounded-full h-2 mb-4">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${progress}%` }}
-                                className="bg-ios-green h-2 rounded-full"
-                                transition={{ duration: 0.5 }}
+                            <div
+                                className="bg-ios-green h-2 rounded-full progress-bar"
+                                style={{ width: `${progress}%` }}
                             />
                         </div>
                         <p className="text-sm text-ios-gray-600">{completedCount} of {checklist.length} completed</p>
@@ -450,12 +431,9 @@
 
                     {/* Checklist Items */}
                     <div className="flex-1 px-6 space-y-4">
-                        {checklist.map((item, index) => (
-                            <motion.div
+                        {checklist.map((item) => (
+                            <div
                                 key={item.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
                                 className={`p-4 rounded-ios-lg border-2 transition-all ${
                                     item.completed
                                         ? 'border-ios-green bg-ios-green/10'
@@ -476,13 +454,13 @@
                                     ) : (
                                         <button
                                             onClick={() => onCompleteItem(item.id)}
-                                            className="bg-ios-blue text-white px-4 py-2 rounded-ios font-medium"
+                                            className="bg-ios-blue text-white px-4 py-2 rounded-ios font-medium ios-button"
                                         >
                                             Do it
                                         </button>
                                     )}
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
 
@@ -490,24 +468,19 @@
                     <div className="p-6 pb-ios-safe-bottom">
                         <button
                             onClick={onNext}
-                            className="w-full bg-ios-blue text-white py-4 rounded-ios-lg font-semibold text-lg"
+                            className="w-full bg-ios-blue text-white py-4 rounded-ios-lg font-semibold text-lg ios-button"
                         >
                             {completedCount === checklist.length ? "Awesome! Let's continue" : "Skip for now"}
                         </button>
                     </div>
-                </motion.div>
+                </div>
             );
         }
 
         // Empty State Screen
         function EmptyStateScreen({ onNext }) {
             return (
-                <motion.div
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    className="flex flex-col h-full bg-white"
-                >
+                <div className="flex flex-col h-full bg-white slide-left">
                     {/* Header */}
                     <div className="pt-ios-safe-top px-6 pb-4">
                         <h2 className="text-2xl font-bold text-ios-gray-900">Your Dashboard</h2>
@@ -515,21 +488,15 @@
 
                     {/* Empty State Content */}
                     <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
-                        <motion.div
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <div className="w-32 h-32 bg-ios-gray-100 rounded-full flex items-center justify-center mb-6">
-                                <span className="text-5xl">📊</span>
-                            </div>
-                            <h3 className="text-2xl font-bold text-ios-gray-900 mb-4">Ready to start tracking?</h3>
-                            <p className="text-ios-gray-600 text-lg leading-relaxed mb-8">
-                                Your dashboard will show your progress,<br />
-                                achievements, and insights as you<br />
-                                build your wellness habits.
-                            </p>
-                        </motion.div>
+                        <div className="w-32 h-32 bg-ios-gray-100 rounded-full flex items-center justify-center mb-6">
+                            <span className="text-5xl">📊</span>
+                        </div>
+                        <h3 className="text-2xl font-bold text-ios-gray-900 mb-4">Ready to start tracking?</h3>
+                        <p className="text-ios-gray-600 text-lg leading-relaxed mb-8">
+                            Your dashboard will show your progress,<br />
+                            achievements, and insights as you<br />
+                            build your wellness habits.
+                        </p>
 
                         <div className="space-y-4 w-full">
                             <button className="w-full bg-ios-blue text-white py-4 rounded-ios-lg font-semibold text-lg ios-button">
@@ -545,12 +512,12 @@
                     <div className="p-6 pb-ios-safe-bottom">
                         <button
                             onClick={onNext}
-                            className="w-full bg-ios-gray-200 text-ios-gray-600 py-3 rounded-ios-lg font-medium"
+                            className="w-full bg-ios-gray-200 text-ios-gray-600 py-3 rounded-ios-lg font-medium ios-button"
                         >
                             Continue tour →
                         </button>
                     </div>
-                </motion.div>
+                </div>
             );
         }
 
@@ -585,38 +552,25 @@
             };
 
             return (
-                <motion.div
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    className="flex flex-col h-full bg-white"
-                >
+                <div className="flex flex-col h-full bg-white slide-left">
                     {/* Skip Button */}
                     <div className="pt-ios-safe-top px-6 flex justify-end">
-                        <button onClick={onNext} className="text-ios-blue font-medium">
+                        <button onClick={onNext} className="text-ios-blue font-medium ios-button">
                             Skip tour
                         </button>
                     </div>
 
                     {/* Tour Content */}
                     <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={currentTip}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className="space-y-6"
-                            >
-                                <div className="w-24 h-24 bg-ios-blue/10 rounded-full flex items-center justify-center mb-6">
-                                    <span className="text-4xl">{tips[currentTip].icon}</span>
-                                </div>
-                                <h3 className="text-2xl font-bold text-ios-gray-900">{tips[currentTip].title}</h3>
-                                <p className="text-ios-gray-600 text-lg leading-relaxed">
-                                    {tips[currentTip].description}
-                                </p>
-                            </motion.div>
-                        </AnimatePresence>
+                        <div className="space-y-6 fade-in">
+                            <div className="w-24 h-24 bg-ios-blue/10 rounded-full flex items-center justify-center mb-6">
+                                <span className="text-4xl">{tips[currentTip].icon}</span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-ios-gray-900">{tips[currentTip].title}</h3>
+                            <p className="text-ios-gray-600 text-lg leading-relaxed">
+                                {tips[currentTip].description}
+                            </p>
+                        </div>
 
                         {/* Dots Indicator */}
                         <div className="flex space-x-2 mt-8">
@@ -640,49 +594,30 @@
                             {currentTip === tips.length - 1 ? "Get started!" : "Next"}
                         </button>
                     </div>
-                </motion.div>
+                </div>
             );
         }
 
         // Celebration Screen
         function CelebrationScreen() {
             return (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex flex-col items-center justify-center h-full betterfly-gradient text-white text-center px-8"
-                >
-                    <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                    >
-                        <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mb-8 backdrop-blur-sm">
-                            <span className="text-6xl">🎉</span>
-                        </div>
-                    </motion.div>
+                <div className="flex flex-col items-center justify-center h-full betterfly-gradient text-white text-center px-8 fade-in">
+                    <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mb-8 backdrop-blur-sm ios-spring">
+                        <span className="text-6xl">🎉</span>
+                    </div>
 
-                    <motion.div
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.5 }}
-                    >
+                    <div>
                         <h2 className="text-3xl font-bold mb-4">You're all set!</h2>
                         <p className="text-xl text-white/90 leading-relaxed mb-8">
                             Welcome to your wellness journey.<br />
                             Let's make every day better together.
                         </p>
-                    </motion.div>
+                    </div>
 
-                    <motion.button
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.7 }}
-                        className="bg-white text-ios-blue font-semibold py-4 px-8 rounded-ios-lg text-lg ios-shadow-lg ios-button"
-                    >
+                    <button className="bg-white text-ios-blue font-semibold py-4 px-8 rounded-ios-lg text-lg ios-shadow-lg ios-button">
                         Start your journey
-                    </motion.button>
-                </motion.div>
+                    </button>
+                </div>
             );
         }
 
