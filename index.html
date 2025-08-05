@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betterfly - First Time User Experience</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.0/dist/framer-motion.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ios-blue': '#007AFF',
+                        'ios-green': '#34C759',
+                        'ios-red': '#FF3B30',
+                        'ios-orange': '#FF9500',
+                        'ios-purple': '#AF52DE',
+                        'ios-pink': '#FF2D92',
+                        'ios-teal': '#5AC8FA',
+                        'ios-yellow': '#FFCC00',
+                        'ios-gray': {
+                            50: '#F2F2F7',
+                            100: '#E5E5EA',
+                            200: '#D1D1D6',
+                            300: '#C7C7CC',
+                            400: '#AEAEB2',
+                            500: '#8E8E93',
+                            600: '#636366',
+                            700: '#48484A',
+                            800: '#3A3A3C',
+                            900: '#1C1C1E'
+                        }
+                    },
+                    fontFamily: {
+                        'sf-pro': ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Segoe UI', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'ios': '10px',
+                        'ios-lg': '16px',
+                        'ios-xl': '20px',
+                    },
+                    spacing: {
+                        'ios-safe-top': '44px',
+                        'ios-safe-bottom': '34px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: #F2F2F7;
+            overflow-x: hidden;
+        }
+        
+        .ios-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .ios-shadow {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .ios-shadow-lg {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .ios-button {
+            transition: all 0.2s ease;
+        }
+        
+        .ios-button:active {
+            transform: scale(0.95);
+        }
+        
+        @keyframes ios-spring {
+            0% { transform: scale(0.9) translateY(10px); opacity: 0; }
+            50% { transform: scale(1.02) translateY(-2px); opacity: 0.8; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        
+        .ios-spring {
+            animation: ios-spring 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .betterfly-gradient {
+            background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const { motion, AnimatePresence } = Motion;
+
+        // iOS FTUX Flow Component
+        function BetterflyFTUX() {
+            const [currentStep, setCurrentStep] = useState(0);
+            const [userPreferences, setUserPreferences] = useState({
+                goals: [],
+                interests: [],
+                name: ''
+            });
+            const [checklist, setChecklist] = useState([
+                { id: 1, title: 'Set your profile', completed: false, icon: '👤' },
+                { id: 2, title: 'Choose your goals', completed: false, icon: '🎯' },
+                { id: 3, title: 'Explore features', completed: false, icon: '✨' }
+            ]);
+
+            const steps = [
+                'welcome',
+                'personalization-1',
+                'personalization-2', 
+                'checklist',
+                'empty-state',
+                'tour',
+                'celebration'
+            ];
+
+            const nextStep = () => {
+                if (currentStep < steps.length - 1) {
+                    setCurrentStep(currentStep + 1);
+                }
+            };
+
+            const prevStep = () => {
+                if (currentStep > 0) {
+                    setCurrentStep(currentStep - 1);
+                }
+            };
+
+            const completeChecklistItem = (id) => {
+                setChecklist(prev => 
+                    prev.map(item => 
+                        item.id === id ? { ...item, completed: true } : item
+                    )
+                );
+            };
+
+            return (
+                <div className="w-full h-screen bg-ios-gray-50 overflow-hidden">
+                    <AnimatePresence mode="wait">
+                        {steps[currentStep] === 'welcome' && (
+                            <WelcomeScreen key="welcome" onNext={nextStep} />
+                        )}
+                        {steps[currentStep] === 'personalization-1' && (
+                            <PersonalizationScreen1 
+                                key="personal-1" 
+                                onNext={nextStep} 
+                                onBack={prevStep}
+                                preferences={userPreferences}
+                                setPreferences={setUserPreferences}
+                            />
+                        )}
+                        {steps[currentStep] === 'personalization-2' && (
+                            <PersonalizationScreen2 
+                                key="personal-2" 
+                                onNext={nextStep} 
+                                onBack={prevStep}
+                                preferences={userPreferences}
+                                setPreferences={setUserPreferences}
+                            />
+                        )}
+                        {steps[currentStep] === 'checklist' && (
+                            <ChecklistScreen 
+                                key="checklist" 
+                                onNext={nextStep}
+                                checklist={checklist}
+                                onCompleteItem={completeChecklistItem}
+                            />
+                        )}
+                        {steps[currentStep] === 'empty-state' && (
+                            <EmptyStateScreen key="empty" onNext={nextStep} />
+                        )}
+                        {steps[currentStep] === 'tour' && (
+                            <TourScreen key="tour" onNext={nextStep} />
+                        )}
+                        {steps[currentStep] === 'celebration' && (
+                            <CelebrationScreen key="celebration" />
+                        )}
+                    </AnimatePresence>
+                </div>
+            );
+        }
+
+        // Welcome Screen Component
+        function WelcomeScreen({ onNext }) {
+            return (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    className="flex flex-col items-center justify-center h-full px-8 betterfly-gradient"
+                >
+                    <div className="text-center space-y-8">
+                        <motion.div
+                            initial={{ scale: 0.8, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                            className="mb-8"
+                        >
+                            <div className="w-24 h-24 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                                <span className="text-4xl">🦋</span>
+                            </div>
+                            <h1 className="text-4xl font-bold text-white mb-2">Welcome to Betterfly</h1>
+                            <p className="text-xl text-white/80">Transform your wellness journey</p>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                            className="space-y-4"
+                        >
+                            <p className="text-lg text-white/90 leading-relaxed">
+                                We're here to help you build healthy habits,<br />
+                                track your progress, and celebrate your wins.
+                            </p>
+                        </motion.div>
+
+                        <motion.button
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.6 }}
+                            onClick={onNext}
+                            className="ios-button bg-white text-ios-blue font-semibold py-4 px-8 rounded-ios-lg text-lg ios-shadow-lg"
+                        >
+                            Let's get started
+                        </button>
+                    </div>
+                </motion.div>
+            );
+        }
+
+        // Personalization Screen 1 - Goals
+        function PersonalizationScreen1({ onNext, onBack, preferences, setPreferences }) {
+            const goals = [
+                { id: 'fitness', title: 'Stay Fit', icon: '💪', color: 'bg-ios-red' },
+                { id: 'mindfulness', title: 'Be Mindful', icon: '🧘‍♀️', color: 'bg-ios-purple' },
+                { id: 'nutrition', title: 'Eat Better', icon: '🥗', color: 'bg-ios-green' },
+                { id: 'sleep', title: 'Sleep Well', icon: '😴', color: 'bg-ios-blue' },
+                { id: 'productivity', title: 'Be Productive', icon: '⚡', color: 'bg-ios-orange' },
+                { id: 'social', title: 'Connect More', icon: '👥', color: 'bg-ios-pink' }
+            ];
+
+            const toggleGoal = (goalId) => {
+                setPreferences(prev => ({
+                    ...prev,
+                    goals: prev.goals.includes(goalId) 
+                        ? prev.goals.filter(id => id !== goalId)
+                        : [...prev.goals, goalId]
+                }));
+            };
+
+            return (
+                <motion.div
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    className="flex flex-col h-full bg-white"
+                >
+                    {/* Header */}
+                    <div className="pt-ios-safe-top px-6 pb-4">
+                        <div className="flex items-center justify-between mb-6">
+                            <button onClick={onBack} className="text-ios-blue text-lg">
+                                ← Back
+                            </button>
+                            <div className="flex space-x-2">
+                                <div className="w-8 h-2 bg-ios-blue rounded-full"></div>
+                                <div className="w-8 h-2 bg-ios-gray-200 rounded-full"></div>
+                            </div>
+                        </div>
+                        <h2 className="text-3xl font-bold text-ios-gray-900 mb-2">What are your goals?</h2>
+                        <p className="text-ios-gray-600">Choose what matters most to you (select multiple)</p>
+                    </div>
+
+                    {/* Goals Grid */}
+                    <div className="flex-1 px-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            {goals.map((goal, index) => (
+                                <motion.button
+                                    key={goal.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    onClick={() => toggleGoal(goal.id)}
+                                    className={`ios-button p-6 rounded-ios-lg border-2 transition-all ${
+                                        preferences.goals.includes(goal.id)
+                                            ? 'border-ios-blue bg-ios-blue/10'
+                                            : 'border-ios-gray-200 bg-white'
+                                    }`}
+                                >
+                                    <div className={`w-12 h-12 rounded-full ${goal.color} flex items-center justify-center mb-3 mx-auto`}>
+                                        <span className="text-xl">{goal.icon}</span>
+                                    </div>
+                                    <h3 className="font-semibold text-ios-gray-900">{goal.title}</h3>
+                                </motion.button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Continue Button */}
+                    <div className="p-6 pb-ios-safe-bottom">
+                        <button
+                            onClick={onNext}
+                            disabled={preferences.goals.length === 0}
+                            className={`w-full py-4 rounded-ios-lg font-semibold text-lg ${
+                                preferences.goals.length > 0
+                                    ? 'bg-ios-blue text-white'
+                                    : 'bg-ios-gray-200 text-ios-gray-400'
+                            }`}
+                        >
+                            Continue ({preferences.goals.length} selected)
+                        </button>
+                    </div>
+                </motion.div>
+            );
+        }
+
+        // Personalization Screen 2 - Experience Level
+        function PersonalizationScreen2({ onNext, onBack, preferences, setPreferences }) {
+            const levels = [
+                { 
+                    id: 'beginner', 
+                    title: 'Just Starting', 
+                    subtitle: 'New to wellness tracking',
+                    icon: '🌱'
+                },
+                { 
+                    id: 'intermediate', 
+                    title: 'Some Experience', 
+                    subtitle: 'I track some habits already',
+                    icon: '🌿'
+                },
+                { 
+                    id: 'advanced', 
+                    title: 'Very Experienced', 
+                    subtitle: 'I use multiple wellness apps',
+                    icon: '🌳'
+                }
+            ];
+
+            return (
+                <motion.div
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    className="flex flex-col h-full bg-white"
+                >
+                    {/* Header */}
+                    <div className="pt-ios-safe-top px-6 pb-4">
+                        <div className="flex items-center justify-between mb-6">
+                            <button onClick={onBack} className="text-ios-blue text-lg">
+                                ← Back
+                            </button>
+                            <div className="flex space-x-2">
+                                <div className="w-8 h-2 bg-ios-blue rounded-full"></div>
+                                <div className="w-8 h-2 bg-ios-blue rounded-full"></div>
+                            </div>
+                        </div>
+                        <h2 className="text-3xl font-bold text-ios-gray-900 mb-2">What's your experience?</h2>
+                        <p className="text-ios-gray-600">Help us personalize your journey</p>
+                    </div>
+
+                    {/* Experience Levels */}
+                    <div className="flex-1 px-6 space-y-4">
+                        {levels.map((level, index) => (
+                            <motion.button
+                                key={level.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.15 }}
+                                onClick={() => setPreferences(prev => ({ ...prev, experience: level.id }))}
+                                className={`ios-button w-full p-6 rounded-ios-lg border-2 text-left transition-all ${
+                                    preferences.experience === level.id
+                                        ? 'border-ios-blue bg-ios-blue/10'
+                                        : 'border-ios-gray-200 bg-white'
+                                }`}
+                            >
+                                <div className="flex items-center space-x-4">
+                                    <div className="text-3xl">{level.icon}</div>
+                                    <div>
+                                        <h3 className="font-semibold text-ios-gray-900 text-lg">{level.title}</h3>
+                                        <p className="text-ios-gray-600">{level.subtitle}</p>
+                                    </div>
+                                </div>
+                            </motion.button>
+                        ))}
+                    </div>
+
+                    {/* Continue Button */}
+                    <div className="p-6 pb-ios-safe-bottom">
+                        <button
+                            onClick={onNext}
+                            disabled={!preferences.experience}
+                            className={`w-full py-4 rounded-ios-lg font-semibold text-lg ${
+                                preferences.experience
+                                    ? 'bg-ios-blue text-white'
+                                    : 'bg-ios-gray-200 text-ios-gray-400'
+                            }`}
+                        >
+                            Continue
+                        </button>
+                    </div>
+                </motion.div>
+            );
+        }
+
+        // Quick Start Checklist Screen
+        function ChecklistScreen({ onNext, checklist, onCompleteItem }) {
+            const completedCount = checklist.filter(item => item.completed).length;
+            const progress = (completedCount / checklist.length) * 100;
+
+            return (
+                <motion.div
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    className="flex flex-col h-full bg-white"
+                >
+                    {/* Header */}
+                    <div className="pt-ios-safe-top px-6 pb-6">
+                        <h2 className="text-3xl font-bold text-ios-gray-900 mb-2">Quick Setup</h2>
+                        <p className="text-ios-gray-600 mb-6">Complete these steps to get the most out of Betterfly</p>
+                        
+                        {/* Progress Bar */}
+                        <div className="bg-ios-gray-200 rounded-full h-2 mb-4">
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progress}%` }}
+                                className="bg-ios-green h-2 rounded-full"
+                                transition={{ duration: 0.5 }}
+                            />
+                        </div>
+                        <p className="text-sm text-ios-gray-600">{completedCount} of {checklist.length} completed</p>
+                    </div>
+
+                    {/* Checklist Items */}
+                    <div className="flex-1 px-6 space-y-4">
+                        {checklist.map((item, index) => (
+                            <motion.div
+                                key={item.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className={`p-4 rounded-ios-lg border-2 transition-all ${
+                                    item.completed
+                                        ? 'border-ios-green bg-ios-green/10'
+                                        : 'border-ios-gray-200 bg-white ios-shadow'
+                                }`}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-4">
+                                        <div className="text-2xl">{item.icon}</div>
+                                        <div>
+                                            <h3 className="font-semibold text-ios-gray-900">{item.title}</h3>
+                                        </div>
+                                    </div>
+                                    {item.completed ? (
+                                        <div className="w-6 h-6 bg-ios-green rounded-full flex items-center justify-center">
+                                            <span className="text-white text-sm">✓</span>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => onCompleteItem(item.id)}
+                                            className="bg-ios-blue text-white px-4 py-2 rounded-ios font-medium"
+                                        >
+                                            Do it
+                                        </button>
+                                    )}
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* Continue Button */}
+                    <div className="p-6 pb-ios-safe-bottom">
+                        <button
+                            onClick={onNext}
+                            className="w-full bg-ios-blue text-white py-4 rounded-ios-lg font-semibold text-lg"
+                        >
+                            {completedCount === checklist.length ? "Awesome! Let's continue" : "Skip for now"}
+                        </button>
+                    </div>
+                </motion.div>
+            );
+        }
+
+        // Empty State Screen
+        function EmptyStateScreen({ onNext }) {
+            return (
+                <motion.div
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    className="flex flex-col h-full bg-white"
+                >
+                    {/* Header */}
+                    <div className="pt-ios-safe-top px-6 pb-4">
+                        <h2 className="text-2xl font-bold text-ios-gray-900">Your Dashboard</h2>
+                    </div>
+
+                    {/* Empty State Content */}
+                    <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                        >
+                            <div className="w-32 h-32 bg-ios-gray-100 rounded-full flex items-center justify-center mb-6">
+                                <span className="text-5xl">📊</span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-ios-gray-900 mb-4">Ready to start tracking?</h3>
+                            <p className="text-ios-gray-600 text-lg leading-relaxed mb-8">
+                                Your dashboard will show your progress,<br />
+                                achievements, and insights as you<br />
+                                build your wellness habits.
+                            </p>
+                        </motion.div>
+
+                        <div className="space-y-4 w-full">
+                            <button className="w-full bg-ios-blue text-white py-4 rounded-ios-lg font-semibold text-lg ios-button">
+                                Log your first activity
+                            </button>
+                            <button className="w-full bg-ios-gray-100 text-ios-gray-900 py-4 rounded-ios-lg font-semibold text-lg ios-button">
+                                Explore features
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Continue Button */}
+                    <div className="p-6 pb-ios-safe-bottom">
+                        <button
+                            onClick={onNext}
+                            className="w-full bg-ios-gray-200 text-ios-gray-600 py-3 rounded-ios-lg font-medium"
+                        >
+                            Continue tour →
+                        </button>
+                    </div>
+                </motion.div>
+            );
+        }
+
+        // Tour Screen
+        function TourScreen({ onNext }) {
+            const [currentTip, setCurrentTip] = useState(0);
+            
+            const tips = [
+                {
+                    title: "Track Daily Habits",
+                    description: "Log your activities and see your streaks grow",
+                    icon: "📈"
+                },
+                {
+                    title: "Get Insights",
+                    description: "Understand your patterns with smart analytics",
+                    icon: "🧠"
+                },
+                {
+                    title: "Stay Motivated",
+                    description: "Earn badges and celebrate your progress",
+                    icon: "🏆"
+                }
+            ];
+
+            const nextTip = () => {
+                if (currentTip < tips.length - 1) {
+                    setCurrentTip(currentTip + 1);
+                } else {
+                    onNext();
+                }
+            };
+
+            return (
+                <motion.div
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    className="flex flex-col h-full bg-white"
+                >
+                    {/* Skip Button */}
+                    <div className="pt-ios-safe-top px-6 flex justify-end">
+                        <button onClick={onNext} className="text-ios-blue font-medium">
+                            Skip tour
+                        </button>
+                    </div>
+
+                    {/* Tour Content */}
+                    <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentTip}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className="space-y-6"
+                            >
+                                <div className="w-24 h-24 bg-ios-blue/10 rounded-full flex items-center justify-center mb-6">
+                                    <span className="text-4xl">{tips[currentTip].icon}</span>
+                                </div>
+                                <h3 className="text-2xl font-bold text-ios-gray-900">{tips[currentTip].title}</h3>
+                                <p className="text-ios-gray-600 text-lg leading-relaxed">
+                                    {tips[currentTip].description}
+                                </p>
+                            </motion.div>
+                        </AnimatePresence>
+
+                        {/* Dots Indicator */}
+                        <div className="flex space-x-2 mt-8">
+                            {tips.map((_, index) => (
+                                <div
+                                    key={index}
+                                    className={`w-2 h-2 rounded-full transition-all ${
+                                        index === currentTip ? 'bg-ios-blue' : 'bg-ios-gray-300'
+                                    }`}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Next Button */}
+                    <div className="p-6 pb-ios-safe-bottom">
+                        <button
+                            onClick={nextTip}
+                            className="w-full bg-ios-blue text-white py-4 rounded-ios-lg font-semibold text-lg ios-button"
+                        >
+                            {currentTip === tips.length - 1 ? "Get started!" : "Next"}
+                        </button>
+                    </div>
+                </motion.div>
+            );
+        }
+
+        // Celebration Screen
+        function CelebrationScreen() {
+            return (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center h-full betterfly-gradient text-white text-center px-8"
+                >
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                    >
+                        <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mb-8 backdrop-blur-sm">
+                            <span className="text-6xl">🎉</span>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.5 }}
+                    >
+                        <h2 className="text-3xl font-bold mb-4">You're all set!</h2>
+                        <p className="text-xl text-white/90 leading-relaxed mb-8">
+                            Welcome to your wellness journey.<br />
+                            Let's make every day better together.
+                        </p>
+                    </motion.div>
+
+                    <motion.button
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.7 }}
+                        className="bg-white text-ios-blue font-semibold py-4 px-8 rounded-ios-lg text-lg ios-shadow-lg ios-button"
+                    >
+                        Start your journey
+                    </motion.button>
+                </motion.div>
+            );
+        }
+
+        // Main App
+        function App() {
+            return (
+                <div className="w-screen h-screen flex items-center justify-center bg-black">
+                    <div className="w-[393px] h-[852px] relative overflow-hidden bg-white rounded-ios-xl ios-shadow-lg">
+                        <BetterflyFTUX />
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
