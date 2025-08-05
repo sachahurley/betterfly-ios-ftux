@@ -287,29 +287,29 @@
                     </div>
 
                     {/* Goals Grid */}
-                    <div className="flex-1 px-6">
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="flex-1 px-6 pb-4 overflow-y-auto">
+                        <div className="grid grid-cols-2 gap-4 max-h-96">
                             {goals.map((goal) => (
                                 <button
                                     key={goal.id}
                                     onClick={() => toggleGoal(goal.id)}
-                                    className={`ios-button p-6 rounded-ios-lg border-2 transition-all ${
+                                    className={`ios-button p-4 rounded-ios-lg border-2 transition-all h-32 ${
                                         preferences.goals.includes(goal.id)
                                             ? 'border-ios-blue bg-ios-blue/10'
                                             : 'border-ios-gray-200 bg-white'
                                     }`}
                                 >
-                                    <div className={`w-12 h-12 rounded-full ${goal.color} flex items-center justify-center mb-3 mx-auto`}>
-                                        <span className="text-xl">{goal.icon}</span>
+                                    <div className={`w-10 h-10 rounded-full ${goal.color} flex items-center justify-center mb-2 mx-auto`}>
+                                        <span className="text-lg">{goal.icon}</span>
                                     </div>
-                                    <h3 className="font-semibold text-ios-gray-900">{goal.title}</h3>
+                                    <h3 className="font-semibold text-ios-gray-900 text-sm">{goal.title}</h3>
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    {/* Continue Button */}
-                    <div className="p-6 pb-ios-safe-bottom">
+                    {/* Continue Button - Fixed positioning */}
+                    <div className="p-6 pb-8 bg-white border-t border-ios-gray-100">
                         <button
                             onClick={onNext}
                             className={`w-full py-4 rounded-ios-lg font-semibold text-lg ios-button transition-all ${
