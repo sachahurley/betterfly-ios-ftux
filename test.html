@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Goals Page</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: #F2F2F7;
+        }
+        
+        .ios-button {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .ios-button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState } = React;
+
+        function TestGoalsPage() {
+            const [selectedGoals, setSelectedGoals] = useState([]);
+            
+            const goals = [
+                { id: 'fitness', title: 'Stay Fit', icon: '💪', color: 'bg-red-500' },
+                { id: 'mindfulness', title: 'Be Mindful', icon: '🧘‍♀️', color: 'bg-purple-500' },
+                { id: 'nutrition', title: 'Eat Better', icon: '🥗', color: 'bg-green-500' },
+                { id: 'sleep', title: 'Sleep Well', icon: '😴', color: 'bg-blue-500' }
+            ];
+
+            const toggleGoal = (goalId) => {
+                setSelectedGoals(prev => 
+                    prev.includes(goalId) 
+                        ? prev.filter(id => id !== goalId)
+                        : [...prev, goalId]
+                );
+            };
+
+            const handleContinue = () => {
+                alert(`Selected goals: ${selectedGoals.join(', ') || 'None'}`);
+            };
+
+            return (
+                <div className="w-screen h-screen flex items-center justify-center bg-black">
+                    <div className="w-[393px] h-[852px] bg-white rounded-lg overflow-hidden flex flex-col">
+                        {/* Header */}
+                        <div className="p-6 bg-white">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">What are your goals?</h2>
+                            <p className="text-gray-600">Choose what matters most to you</p>
+                        </div>
+
+                        {/* Goals Grid */}
+                        <div className="flex-1 p-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                {goals.map((goal) => (
+                                    <button
+                                        key={goal.id}
+                                        onClick={() => toggleGoal(goal.id)}
+                                        className={`ios-button p-4 rounded-lg border-2 transition-all ${
+                                            selectedGoals.includes(goal.id)
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-gray-200 bg-white'
+                                        }`}
+                                    >
+                                        <div className={`w-12 h-12 rounded-full ${goal.color} flex items-center justify-center mb-2 mx-auto`}>
+                                            <span className="text-xl">{goal.icon}</span>
+                                        </div>
+                                        <h3 className="font-semibold text-gray-900 text-sm">{goal.title}</h3>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* ALWAYS VISIBLE CONTINUE BUTTON */}
+                        <div className="bg-white p-6 border-t border-gray-200">
+                            <button
+                                onClick={handleContinue}
+                                className="w-full bg-blue-500 text-white py-4 rounded-lg font-semibold text-lg ios-button"
+                            >
+                                Continue ({selectedGoals.length} selected)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<TestGoalsPage />, document.getElementById('root'));
+    </script>
+</body>
+</html>
