@@ -312,14 +312,16 @@
                     <div className="p-6 pb-ios-safe-bottom">
                         <button
                             onClick={onNext}
-                            disabled={preferences.goals.length === 0}
-                            className={`w-full py-4 rounded-ios-lg font-semibold text-lg ios-button ${
+                            className={`w-full py-4 rounded-ios-lg font-semibold text-lg ios-button transition-all ${
                                 preferences.goals.length > 0
                                     ? 'bg-ios-blue text-white'
-                                    : 'bg-ios-gray-200 text-ios-gray-400'
+                                    : 'bg-ios-gray-200 text-ios-gray-600 hover:bg-ios-gray-300'
                             }`}
                         >
-                            Continue ({preferences.goals.length} selected)
+                            {preferences.goals.length > 0 
+                                ? `Continue (${preferences.goals.length} selected)` 
+                                : "Continue (Skip for now)"
+                            }
                         </button>
                     </div>
                 </div>
